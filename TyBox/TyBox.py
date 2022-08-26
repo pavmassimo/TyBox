@@ -1,11 +1,11 @@
 import tensorflow as tf
 import numpy as np
 
-from profiler import Profiler
+from .profiler import Profiler
 
-from CodeGen import *
+from .CodeGen import *
 
-from PyBox import Model
+from .PyBox import Model
 
 class Error(Exception):
     pass

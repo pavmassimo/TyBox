@@ -55,13 +55,13 @@ def generate_Mc_manual_C(M_c, len_buff):
 
     string += gen_network_struct(layer_sizes_list)
 
-    string += f"float activation_0[{layers[0]}];"
+    string += f"float activation_0[{layers[0]}];\n"
 
     for index in range(len(layers) - 1):
         string += "float activation_{index_1}[{size}];\n\
 float bias_layer_{index}[{size}] = {biases};\n\
 float weights_layer_{index}[{weight_size}] = {weights};\n\
-Activation_function* activation_function_{index} = new {activation_function}();" \
+Activation_function activation_function_{index} = new {activation_function}();\n" \
             .format(index=index, index_1=index+1, size=layers[index+1],
                     weights=weights_strings[index][0], biases=weights_strings[index][1],
                     weight_size=layers[index + 1] * layers[index],
@@ -242,14 +242,14 @@ def gen_network_struct(layer_sizes_list):
         bool is_full;\n\
     \n\
     \n\
-    }}t_dense_network;"\
+    }}t_dense_network;\n"\
     .format(layer_sizes_list)
     return res
 
 def gen_init_network(number_of_layers):
 
     res = "void init_network(t_dense_network &dense_network){\n\
-    dense_network.activations_list[0] = activation_0;"
+    dense_network.activations_list[0] = activation_0;\n"
 
     for index in range(number_of_layers - 1):
         res += "    dense_network.activations_list[{index_one}] = activation_{index_one};\n\

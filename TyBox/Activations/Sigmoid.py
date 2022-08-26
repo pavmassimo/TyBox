@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from Activation import Activation
+from .Activation import Activation
 
 class Sigmoid(Activation):
 

@@ -1,4 +1,4 @@
-from Layer import Layer
+from .Layer import Layer
 
 
 class AvgPool2dLayer(Layer):

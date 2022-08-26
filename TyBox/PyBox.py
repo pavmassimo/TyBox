@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from create_a import create_activation
+from .create_a import create_activation
 
 class Model:
     def __init__(self, layer_widths, activation_functions, len_buff):
