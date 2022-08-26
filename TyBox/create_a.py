@@ -1,21 +1,21 @@
-import TyBox.Activations as a
+from .Activations import *
 
 def create_activation(activation):
     print("create_a")
     print(activation)
 
     if activation == 'linear':
-        return a.Linear()
+        return Linear()
 
     elif activation == 'relu':
-        return a.Relu()
+        return Relu()
 
     elif activation == 'softmax':
-        return a.Softmax()
+        return Softmax()
 
     elif activation == 'sigmoid':
-        return a.Sigmoid()
+        return Sigmoid()
 
     else:
         print('activation: ', activation, ' is not supported, using linear instead')
-        return a.Linear()
+        return Linear()
