@@ -16,7 +16,7 @@ class Model:
             self.activation_functions.append(create_activation(activation_function))
 
         self.buffer = np.zeros((len_buff, self.inputs))
-        self.labels = np.zeros((len_buff, 2))
+        self.labels = np.zeros((len_buff, self.outputs))
 
         self.buffer_pointer = 0
         self.lr = 0.01
