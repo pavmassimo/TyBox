@@ -15,7 +15,6 @@ class ModelRequirementsError(Error):
     def __init__(self, message):
         self.message = message
 
-# toolbox
 
 # input: tf_model; requirement: tflite supported feature extraction block + flatten layer + dense block
 # return: model1, feature extraction block + flatten layer as tf model
