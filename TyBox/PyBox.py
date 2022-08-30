@@ -9,7 +9,6 @@ class Model:
         self.layers = [[0 for ii in range(layer_widths[i])] for i in range(len(layer_widths))]
         self.weights = [np.random.rand(layer_widths[i], layer_widths[i + 1]) for i in range(len(layer_widths) - 1)]
         self.biases = [np.empty((layer_widths[i + 1])) for i in range(len(layer_widths) - 1)]
-        self.softmax = True
         self.activation_functions = []
 
         for activation_function in activation_functions:
@@ -17,8 +16,18 @@ class Model:
 
         self.buffer = np.zeros((len_buff, self.inputs))
         self.labels = np.zeros((len_buff, self.outputs))
-
+        self.buffer_full = False
         self.buffer_pointer = 0
+
+        self.accuracies = np.zeros(len_buff)
+        self.accuracies_pointer = 0
+        self.accuracies_full = False
+
+        self.accuracy = 0
+        self.max_acc = 0
+        self.elements_when_max = 0
+        self.alert_pointer = None
+
         self.lr = 0.01
 
     def read_weights(self, files):
@@ -109,8 +118,8 @@ class Model:
         calculated_label = self.layers[-1].index(max(self.layers[-1]))
         target_label = list(target).index(max(target))
         if calculated_label == target_label:
-            return True
-        return False
+            return 1
+        return 0
 
     def train(self):
         for input_index in range(self.buffer_pointer):
@@ -118,20 +127,88 @@ class Model:
             self.execute_backprop(self.labels[input_index], self.lr)
 
     def push_datum(self, datum, target):
-        if self.buffer_pointer >= len(self.buffer):
-            self.buffer_pointer = 0
         for i in range(len(datum)):
             self.buffer[self.buffer_pointer][i] = datum[i]
         self.labels[self.buffer_pointer] = target
         self.buffer_pointer = self.buffer_pointer + 1
 
+        if self.buffer_pointer >= len(self.buffer):
+            self.buffer_pointer = 0
+
     def push_data(self, data, targets):
         for input_index in range(len(data)):
             self.push_datum(data[input_index], targets[input_index])
 
-    def push_and_train(self, datum, target):
-        self.push_datum(datum, target)
-        self.train()
-
     def set_lr(self, lr):
         self.lr = lr
+
+    def push_result(self, result):
+
+        self.accuracies[self.accuracies_pointer] = result
+        self.accuracies_pointer_pointer += 1
+
+        if self.accuracies_pointer >= len(self.accuracies):
+            self.accuracies_pointer = 0
+            self.accuracies_full = True
+
+    def evaluate_push_and_train(self, datum, target):
+        result = self.evaluate_one(datum, target)
+        self.push_result(result)
+        self.push_datum(datum, target)
+        self.train()
+        self.accuracy = self.running_average_accuracy()
+
+        if self.accuracy > self.max_acc:
+            self.max_acc = self.accuracy
+            self.elements_when_max = max(self.accuracies_pointer, len(self.accuracies) * self.accuracies_full)
+
+        self.abrupt_cd_detector()
+        return self.accuracy
+
+    def running_average_accuracy(self):
+        if self.accuracies_full:
+            return np.mean(self.accuracies)
+        else:
+            return np.mean(self.accuracies[:self.accuracies_pointer])
+
+    def abrupt_cd_detector(self):
+
+        self.accuracy = self.running_average_accuracy()
+
+        if self.accuracy > self.max_acc:
+            self.max_acc = self.accuracy
+            self.elements_when_max = max(self.accuracies_pointer, len(self.accuracies) * self.accuracies_full)
+
+        p_i = 1-self.accuracy
+        p_min = 1-self.max_acc
+
+        delta_i = math.sqrt((p_i * (1-p_i)) / max(self.accuracies_pointer, len(self.accuracies) * self.accuracies_full))
+        delta_min = math.sqrt((p_i * (1-p_i)) / self.elements_when_max)
+
+        if (p_i + delta_i > p_min + 3 * delta_min and self.alert_pointer is not None):
+            print("Concept drift!")
+            if self.buffer_pointer >= self.alert_pointer:
+                diff = self.buffer_pointer - self.alert_pointer
+                self.buffer[:diff] = self.buffer[self.alert_pointer: self.buffer_pointer]
+
+            else:
+                diff = self.buffer_pointer + len(self.buffer) - self.alert_pointer
+                self.buffer[:diff] = np.concatenate(self.buffer[self.alert_pointer:], self.buffer[:self.buffer_pointer])
+
+            self.buffer_pointer = diff
+            self.buffer_full = False
+
+            self.accuracies = np.zeros(self.len_buff)
+            self.accuracies_pointer = 0
+            self.accuracies_full = False
+
+            self.alert_pointer = None
+            self.accuracy = 0
+            self.max_acc = 0
+            self.elements_when_max = 0
+        if (p_i + delta_i > p_min + 2 * delta_min):
+            print("alert")
+            self.alert_pointer = self.buffer_pointer
+        else:
+            self.alert_pointer = None
+
