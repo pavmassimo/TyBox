@@ -18,9 +18,10 @@ class ModelRequirementsError(Error):
 # toolbox
 
 # input: tf_model; requirement: tflite supported feature extraction block + flatten layer + dense block
+# input: yield_representative_dataset
 # return: model1, feature extraction block + flatten layer as tf model
 # return: model2, dense block as tf model
-def split_model(tf_model):
+def split_model(tf_model, yield_representative_dataset):
     # calculate index of flatten layer (the model is split at the output of the flatten layer)
     flatten_layers = list(filter(lambda layer: 'flatten' in layer.name, tf_model.layers))
     if len(flatten_layers) == 1:
@@ -121,7 +122,7 @@ def generate_implementation(tf_model):
     return Mc_manual_python, Mc_manual_header
 
 
-def create_python_model(M_c, len_buff):
+def create_python_model(M_c):
     # create model
     layers = []
     #   layer.input.shape[1] for layer in M_c.layers
@@ -129,16 +130,13 @@ def create_python_model(M_c, len_buff):
     #     layers.append(M_c.layers[0].input.shape[1])
     #     layers.append(M_c.layers[0].output.shape[1])
     # else:
-    activations_function = []
     for l in M_c.layers:
-        print(str(l.activation).split(" ")[1])
-        activations_function.append(str(l.activation).split(" ")[1])
         if 'dense' in l.name:
             layers.append(l.input.shape[1])
     layers.append(M_c.layers[-1].output.shape[1])
     print('debug', layers)
     # print('layers', layers)
-    Mc_manual_python = Model(layers, activations_function, len_buff)
+    Mc_manual_python = Model(layers)
     # transfer weights
     w = extract_weights(M_c)
     file_name_list = []
@@ -157,24 +155,16 @@ def create_python_model(M_c, len_buff):
 
 # input: tf_model; requirement: tflite supported feature extraction block + flatten layer + dense block (3 layers: input, hidden, output)
 # input: yield_representative_dataset
-def create_on_device_learning_solution(tf_model, mem_available, precision):#, yield_representative_dataset):
-
+def create_on_device_learning_solution(tf_model, yield_representative_dataset):
     # M_f: Model_features, feature extraction block + flatten layer
     # M_c: Model_classification, dense block
-    M_f, M_c = split_model(tf_model)#, yield_representative_dataset)
-    Mf_lite = convert_to_tflite(M_f)#, yield_representative_dataset)
-
-    input_dim = M_c.layers[0].input.shape[1] + 1
-
-    len_buff = calculate_buf_dim(tf_model, mem_available, input_dim, precision)
-
-    print(f"each datum requires {(input_dim * precision / 8)} B")
-    print(f"the buffer will be {len_buff} data long")
-
-    Mc_manual_header = generate_Mc_manual_C(M_c, len_buff)
-
+    M_f, M_c = split_model(tf_model, yield_representative_dataset)
+    Mf_lite = convert_to_tflite(M_f, yield_representative_dataset)
+    Mc_lite = convert_to_tflite(M_c)
+    Mc_manual_python = create_python_model(M_c)
+    Mc_manual_header = generate_Mc_manual_C(M_c)
     Mf_header, Mf_cc = create_Mf_lite_C(Mf_lite)
-    return Mc_manual_header, Mf_header, Mf_cc
+    return Mf_lite, Mc_manual_python, M_c, Mc_manual_header, Mf_header, Mf_cc
 
 
 # input: tf_model; requirement: tflite supported feature extraction block + flatten layer + dense block (3 layers: input, hidden, output)

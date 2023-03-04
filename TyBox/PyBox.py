@@ -1,25 +1,13 @@
 import numpy as np
 import math
 from .create_a import create_activation
-
 class Model:
-    def __init__(self, layer_widths, activation_functions, len_buff):
+    def __init__(self, layer_widths):
         self.inputs = layer_widths[0]
         self.outputs = layer_widths[-1]
         self.layers = [[0 for ii in range(layer_widths[i])] for i in range(len(layer_widths))]
         self.weights = [np.random.rand(layer_widths[i], layer_widths[i + 1]) for i in range(len(layer_widths) - 1)]
         self.biases = [np.empty((layer_widths[i + 1])) for i in range(len(layer_widths) - 1)]
-        self.softmax = True
-        self.activation_functions = []
-
-        for activation_function in activation_functions:
-            self.activation_functions.append(create_activation(activation_function))
-
-        self.buffer = np.zeros((len_buff, self.inputs))
-        self.labels = np.zeros((len_buff, self.outputs))
-
-        self.buffer_pointer = 0
-        self.lr = 0.01
 
     def read_weights(self, files):
         # print('read weights', len(files), len(self.layers) - 1)
@@ -52,7 +40,14 @@ class Model:
                 for input_node_index in range(len(self.layers[i])):
                     self.layers[i + 1][node_index] += self.layers[i][input_node_index] * \
                                                       self.weights[i][input_node_index][node_index]
-            self.layers[i + 1] = self.activation_functions[i].activate(self.layers[i + 1])
+                if i < len(self.layers) - 2:
+                    self.layers[i + 1][node_index] = sigmoid(self.layers[i + 1][node_index])
+        act = np.array(self.layers[-1])
+        act = softmax(act)
+        for i in range(len(self.layers[-1])):
+            self.layers[-1][i] = act[i]
+
+        # do_activation(activation_type)
 
     def execute_backprop(self, target, lr):
         output_deltas = self.calculate_output_delta(target)
@@ -67,17 +62,25 @@ class Model:
 
     def calculate_output_delta(self, target):
         assert len(target) == self.outputs
-        delta_output_list = self.activation_functions[-1].calculate_output_delta(self.layers[-1], target)
-
+        delta_output_list = []
+        for output_index in range(self.outputs):
+            delta = sigmoid_derivative(self.layers[-1][output_index]) * (
+                        target[output_index] - self.layers[-1][output_index])
+            delta_output_list.append(delta)
         assert len(delta_output_list) == self.outputs
         return delta_output_list
 
     def calculate_hidden_delta(self, layer_index, successive_layer_delta):
         assert 0 < layer_index < (len(self.layers) - 1)
         assert len(successive_layer_delta) == len(self.layers[layer_index + 1])
-        delta_hidden_list = self.activation_functions[layer_index].calculate_hidden_delta(self.layers[layer_index + 1],
-                                                                                          self.weights[layer_index],
-                                                                                          successive_layer_delta)
+        delta_hidden_list = []
+        for node_index in range(len(self.layers[layer_index])):
+            sum_of_succ_layer_deltas = 0
+            for next_layer_node_index in range(len(self.layers[layer_index + 1])):
+                sum_of_succ_layer_deltas += successive_layer_delta[next_layer_node_index] \
+                                            * self.weights[layer_index][node_index][next_layer_node_index]
+            delta = sigmoid_derivative(self.layers[layer_index][node_index]) * sum_of_succ_layer_deltas
+            delta_hidden_list.append(delta)
         assert len(delta_hidden_list) == len(self.layers[layer_index])
         return delta_hidden_list
 
@@ -99,7 +102,7 @@ class Model:
         for input_index in range(len(inputs)):
             self.execute_forward_pass(inputs[input_index])
             target_label = list(targets[input_index]).index(max(targets[input_index]))
-            calculated_label = list(self.layers[-1]).index(max(self.layers[-1]))
+            calculated_label = self.layers[-1].index(max(self.layers[-1]))
             if target_label == calculated_label:
                 score += 1
         return score/len(inputs)
@@ -112,26 +115,12 @@ class Model:
             return True
         return False
 
-    def train(self):
-        for input_index in range(self.buffer_pointer):
-            self.execute_forward_pass(self.buffer[input_index])
-            self.execute_backprop(self.labels[input_index], self.lr)
+    def train(self, inputs, targets, lr):
+        for input_index in range(len(inputs)):
+            self.execute_forward_pass(inputs[input_index])
+            self.execute_backprop(targets[input_index], lr)
 
-    def push_datum(self, datum, target):
-        if self.buffer_pointer >= len(self.buffer):
-            self.buffer_pointer = 0
-        for i in range(len(datum)):
-            self.buffer[self.buffer_pointer][i] = datum[i]
-        self.labels[self.buffer_pointer] = target
-        self.buffer_pointer = self.buffer_pointer + 1
-
-    def push_data(self, data, targets):
-        for input_index in range(len(data)):
-            self.push_datum(data[input_index], targets[input_index])
-
-    def push_and_train(self, datum, target):
-        self.push_datum(datum, target)
-        self.train()
-
-    def set_lr(self, lr):
-        self.lr = lr
+    def train_until_correct(self, input_data, target, lr):
+        while not self.evaluate_one(input_data, target):
+            self.execute_forward_pass(input_data)
+            self.execute_backprop(target, lr)
