@@ -30,15 +30,14 @@ def extract_Mc_weights_as_string_unrolled_matrix(tf_model):
 
 # input: dense model with inputs, hidden layer and output layer
 # output: string with struct definition of the same model in C with weights (header file)
-def generate_Mc_manual_C(M_c, len_buff):
+def generate_Mc_manual_C(M_c):
     inputs = M_c.layers[0].input.shape[1]
     # hidden_nodes = M_c.layers[1].input.shape[1]
     outputs = M_c.output.shape[1]
-    activations_function = []
+
     weights_strings = extract_Mc_weights_as_string_unrolled_matrix(M_c)
     layers = []
     for l in M_c.layers:
-        activations_function.append(str(l.activation).split(" ")[1])
         if 'dense' in l.name:
             layers.append(l.input.shape[1])
     layers.append(M_c.output.shape[1])
@@ -50,33 +49,52 @@ def generate_Mc_manual_C(M_c, len_buff):
     layer_sizes_list += '}'
 
     string = ''
-    string += gen_header(inputs, len_buff, len(layers)-1)
+  #   string_cc = '#include"Mc_manual.h"\n\
+  # void init_network(){\n\
+  # numOutputs = layer_sizes[number_of_layers - 1];\n'
+  #   string_cc += 'layer_list[0] = layer_0;\n'
+
+    # bias_pointer_list = 'float *bias_list[{}];\n'.format(len(layers) - 1)
+    # weight_pointer_list = 'float *weight_list[{}];\n'.format(len(layers) - 1)
+    # layer_pointer_list = 'float *layer_list[{}];\n'.format(len(layers))
+    # string += bias_pointer_list
+    # string += weight_pointer_list
+    # string += layer_pointer_list
+
     string += gen_activations()
-
-    string += gen_network_struct(layer_sizes_list)
-
-    string += f"float activation_0[{layers[0]}];\n"
-
+    string += gen_network_struct(len(layers))
+    string += 'const int number_of_layers = {};\n'.format(len(layers))
+    string += 'const int layer_sizes[number_of_layers] = {};\n'.format(layer_sizes_list)
+    string += 'float layer_0[{}];\n'.format(layers[0])
     for index in range(len(layers) - 1):
-        string += "float activation_{index_1}[{size}];\n\
-float bias_layer_{index}[{size}] = {biases};\n\
-float weights_layer_{index}[{weight_size}] = {weights};\n\
-Activation_function activation_function_{index} = new {activation_function}();\n" \
-            .format(index=index, index_1=index+1, size=layers[index+1],
-                    weights=weights_strings[index][0], biases=weights_strings[index][1],
-                    weight_size=layers[index + 1] * layers[index],
-                    activation_function=activations_function[index].capitalize())
-    string += gen_init_network(len(layers))
+        string += "float layer_{index_one}[{size}];\n\
+float bias_layer_{index_one}[{size}] = {biases};\n\
+float weights_layer_{index_one}[{weight_size}] = {weights};\n" \
+            .format(index_zero=index, index_one=(index + 1), size=layers[index + 1], \
+                    other_size=layers[index], weights=weights_strings[index][0], \
+                    biases=weights_strings[index][1], weight_size=layers[index + 1] * layers[index])
 
+#         string_cc += 'layer_list[{index_one}] = layer_{index_one};\n\
+# bias_list[{index_zero}] = bias_layer_{index_one};\n\
+# weight_list[{index_zero}] = weights_layer_{index_one};\n' \
+#             .format(index_zero=index, index_one=(index + 1))
+
+    # string_cc += '}\n'
+    string += gen_init_network(len(layers))
+    string += "const int numOutputs = layer_sizes[number_of_layers - 1];"
+    string += gen_sigmoid()
     string += gen_forward_pass()
     string += gen_get_label()
-    string += gen_update_weights()
-    string += gen_backpropagate()
-    string += gen_train()
-    string += gen_push()
-    string += gen_evaluate()
+    return
 
-    return string
+def gen_sigmoid():
+    res = "float sigmoid(float input){\n\
+    return 1 / (1 + exp(-input));\n\
+}\n\
+float sigmoid_derivative(float sig){\n\
+    return (sig * (1 - sig));\n\
+}\n"
+    return res
 
 def gen_header(feature_size, buffer_size, n_layers):
     res = f"#include <math.h>\n\
