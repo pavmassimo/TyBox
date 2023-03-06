@@ -6,11 +6,10 @@ import pytest
 from tensorflow import keras
 import tensorflow as tf
 
+from TyBox import split_model, create_python_model
 
-@pytest.fixture
+
 def test_model():
-    # Setup code goes here
-    print("Running setup before all tests")
     cwd = os.getcwd()
 
     filters = 8
@@ -44,9 +43,19 @@ def test_model():
     train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_SIZE)
     test_dataset = test_dataset.batch(BATCH_SIZE)
     model.fit(train_dataset, epochs=1)
-    return model
+    model.evaluate(test_dataset)
+    model.save("resources/test_model")
+    return
+
+def test_split():
+    test_model = keras.models.load_model("resources/test_model")
+    feature_extractor, classifier = split_model(test_model, None)
+    tybox_classifier_simulator = create_python_model(classifier)
+    test_input = np.reshape(np.array([1 for _ in range(200)]), (1, -1))
+    print(classifier.predict(test_input))
+    tybox_classifier_simulator.execute_forward_pass(np.array([1 for _ in range(200)]))
 
 
-def test_load_model(test_model):
-    print(test_model.model)
+
+
 
