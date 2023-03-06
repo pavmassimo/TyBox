@@ -7,7 +7,7 @@ class Model:
     def __init__(self, layer_widths):
         self.inputs = layer_widths[0]
         self.outputs = layer_widths[-1]
-        self.layers = [[0 for ii in range(layer_widths[i])] for i in range(len(layer_widths))]
+        self.layers = [[0 for _ in range(layer_widths[i])] for i in range(len(layer_widths))]
         self.weights = [np.random.rand(layer_widths[i], layer_widths[i + 1]) for i in range(len(layer_widths) - 1)]
         self.biases = [np.empty((layer_widths[i + 1])) for i in range(len(layer_widths) - 1)]
 
