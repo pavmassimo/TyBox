@@ -3,8 +3,9 @@ import math
 
 from .Activation import Activation
 
-class Sigmoid(Activation):
 
+class Sigmoid(Activation):
+    @staticmethod
     def activate(self, vector):
         results = []
         for input_value in vector:
@@ -18,6 +19,8 @@ class Sigmoid(Activation):
         return results
 
     """vector assumed to be already activated"""
+
+    @staticmethod
     def derivative(self, vector):
         results = []
         for input_value in vector:

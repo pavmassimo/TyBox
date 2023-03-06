@@ -5,12 +5,13 @@ from .Activation import Activation
 
 
 class Softmax(Activation):
-
+    @staticmethod
     def activate(self, vector):
         e = np.exp(vector)
         return e / e.sum()
 
     """vector assumed to be already activated"""
+    @staticmethod
     def derivative(self, vector):
         s = np.array(vector)
         si_sj = -s * s.reshape(len(vector), 1)

@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
@@ -28,20 +30,17 @@ def create_test_model():
         train_labels = data['y_train']
         test_examples = np.array(data['x_test'], dtype='float32')
         test_labels = data['y_test']
-
     layer = tf.keras.layers.Normalization(axis=None)
     layer.adapt(train_examples)
     train_examples = np.array(layer(train_examples))
     test_examples = np.array(layer(test_examples))
-
     train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
     test_dataset = tf.data.Dataset.from_tensor_slices((test_examples, test_labels))
-
     BATCH_SIZE = 64
     SHUFFLE_BUFFER_SIZE = 100
-
     train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_SIZE)
     test_dataset = test_dataset.batch(BATCH_SIZE)
+
     model.fit(train_dataset, epochs=1)
     model.evaluate(test_dataset)
     model.save("resources/test_model")
@@ -53,9 +52,9 @@ def test_forward_pass():
     feature_extractor, classifier = split_model(test_model, None)
     tybox_classifier_simulator = create_python_model(classifier)
     tybox_classifier_simulator.execute_forward_pass(np.array([1 for _ in range(200)]))
-    values = tybox_classifier_simulator.layers[-1]
-    expected_values = [0.02082248116088183, 0.004599924048296336, 0.3300443786772069, 0.30252107247189924,
-                       0.06465487425849603, 0.16250079747054655, 0.013252719925060937, 0.03450581090622811,
-                       0.060185346048922624, 0.006912595032461456]
+    values: List[float] = tybox_classifier_simulator.layers[-1]
+    expected_values: List[float] = [0.02082248116088183, 0.004599924048296336, 0.3300443786772069, 0.30252107247189924,
+                                    0.06465487425849603, 0.16250079747054655, 0.013252719925060937, 0.03450581090622811,
+                                    0.060185346048922624, 0.006912595032461456]
     for value, expected_value in zip(values, expected_values):
-        assert (value - expected_value < 10e15)
+        assert ((value**2 - expected_value**2) < 10e15)

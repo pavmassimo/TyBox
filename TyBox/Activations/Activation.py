@@ -1,16 +1,20 @@
+from abc import abstractmethod, ABC
+
 import numpy as np
 import math
 
 
-class Activation:
-
+class Activation(ABC):
+    @staticmethod
     def activate(self, vector):
         pass
 
+    @staticmethod
     def derivative(self, vector):
         pass
 
     """vector assumed to be already activated"""
+
     def calculate_output_delta(self, vector, target):
         delta_output_list = self.derivative(vector) * (target - vector)
 
@@ -26,13 +30,12 @@ class Activation:
         return delta_hidden_list
 
 
-
+# are these duplicates?
 def sigmoid(input_value):
     try:
         result = 1 / (1 + math.exp(-input_value))
     except Exception as e:
-        print(input_value, e)
-        raise Exception
+        raise Exception(f"{input_value}, {e}")
     return result
 
 
@@ -46,9 +49,9 @@ def softmax(vector):
     return e / e.sum()
 
 
-def softmax_derivative(softmax_out, output_erros):
+def softmax_derivative(softmax_out, output_errors):
     s = np.array(softmax_out)
     si_sj = -s * s.reshape(len(softmax_out), 1)
     s_der = np.diag(s) + si_sj
-    tmp = s_der @ output_erros
+    tmp = s_der @ output_errors
     return tmp
