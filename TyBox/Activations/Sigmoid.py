@@ -6,7 +6,7 @@ from .Activation import Activation
 
 class Sigmoid(Activation):
     @staticmethod
-    def activate(self, vector):
+    def activate(vector):
         results = []
         for input_value in vector:
             try:
@@ -21,7 +21,7 @@ class Sigmoid(Activation):
     """vector assumed to be already activated"""
 
     @staticmethod
-    def derivative(self, vector):
+    def derivative(vector):
         results = []
         for input_value in vector:
             result = input_value * (1 - input_value)

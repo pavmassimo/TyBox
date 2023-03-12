@@ -6,11 +6,11 @@ import math
 
 class Activation(ABC):
     @staticmethod
-    def activate(self, vector):
+    def activate(vector):
         pass
 
     @staticmethod
-    def derivative(self, vector):
+    def derivative(vector):
         pass
 
     """vector assumed to be already activated"""

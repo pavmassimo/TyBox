@@ -2,6 +2,7 @@ import numpy as np
 import math
 
 # from Activations.activation_funcs import sigmoid, softmax, sigmoid_derivative
+from Activations import Sigmoid, Softmax
 from .create_a import create_activation
 class Model:
     def __init__(self, layer_widths):
@@ -43,9 +44,9 @@ class Model:
                     self.layers[i + 1][node_index] += self.layers[i][input_node_index] * \
                                                       self.weights[i][input_node_index][node_index]
                 if i < len(self.layers) - 2:
-                    self.layers[i + 1][node_index] = sigmoid(self.layers[i + 1][node_index])
+                    self.layers[i + 1][node_index] = Sigmoid.activate(self.layers[i + 1][node_index])
         act = np.array(self.layers[-1])
-        act = softmax(act)
+        act = Softmax.activate(act)
         for i in range(len(self.layers[-1])):
             self.layers[-1][i] = act[i]
 
@@ -66,7 +67,7 @@ class Model:
         assert len(target) == self.outputs
         delta_output_list = []
         for output_index in range(self.outputs):
-            delta = sigmoid_derivative(self.layers[-1][output_index]) * (
+            delta = Sigmoid.derivative(self.layers[-1][output_index]) * (
                         target[output_index] - self.layers[-1][output_index])
             delta_output_list.append(delta)
         assert len(delta_output_list) == self.outputs
@@ -81,7 +82,7 @@ class Model:
             for next_layer_node_index in range(len(self.layers[layer_index + 1])):
                 sum_of_succ_layer_deltas += successive_layer_delta[next_layer_node_index] \
                                             * self.weights[layer_index][node_index][next_layer_node_index]
-            delta = sigmoid_derivative(self.layers[layer_index][node_index]) * sum_of_succ_layer_deltas
+            delta = Sigmoid.derivative(self.layers[layer_index][node_index]) * sum_of_succ_layer_deltas
             delta_hidden_list.append(delta)
         assert len(delta_hidden_list) == len(self.layers[layer_index])
         return delta_hidden_list

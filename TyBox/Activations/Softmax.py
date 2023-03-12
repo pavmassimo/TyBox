@@ -6,13 +6,13 @@ from .Activation import Activation
 
 class Softmax(Activation):
     @staticmethod
-    def activate(self, vector):
+    def activate(vector):
         e = np.exp(vector)
         return e / e.sum()
 
     """vector assumed to be already activated"""
     @staticmethod
-    def derivative(self, vector):
+    def derivative(vector):
         s = np.array(vector)
         si_sj = -s * s.reshape(len(vector), 1)
         s_der = np.diag(s) + si_sj
