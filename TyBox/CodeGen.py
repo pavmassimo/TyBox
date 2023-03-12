@@ -1,18 +1,19 @@
 import os
 import subprocess
 
-
 def extract_Mc_weights_as_string_unrolled_matrix(tf_model):
     result = []
     for layer in tf_model.layers:
         if len(layer.weights) > 0:
             hiddel_layer_weights = '{'
             for i in range(layer.weights[0].numpy().shape[0]):
+                # hiddel_layer_weights += '{'
                 for ii in range(len(layer.weights[0].numpy()[i])):
                     weight = layer.weights[0].numpy()[i][ii]
                     hiddel_layer_weights += str(weight)
                     if ii < len(layer.weights[0].numpy()[i]) - 1:
                         hiddel_layer_weights += ', '
+                # hiddel_layer_weights += '}'
                 if i < (layer.weights[0].numpy().shape[0] - 1):
                     hiddel_layer_weights += ',\n'
             hiddel_layer_weights += '}'
@@ -27,16 +28,17 @@ def extract_Mc_weights_as_string_unrolled_matrix(tf_model):
             result.append((hiddel_layer_weights, hidden_layer_biases))
     return result
 
-
 # input: dense model with inputs, hidden layer and output layer
 # output: string with struct definition of the same model in C with weights (header file)
-def generate_Mc_manual_C(M_c):
+def generate_Mc_manual_C(M_c, len_buff):
     inputs = M_c.layers[0].input.shape[1]
+    # hidden_nodes = M_c.layers[1].input.shape[1]
     outputs = M_c.output.shape[1]
-
+    activations_function = []
     weights_strings = extract_Mc_weights_as_string_unrolled_matrix(M_c)
     layers = []
     for l in M_c.layers:
+        activations_function.append(str(l.activation).split(" ")[1])
         if 'dense' in l.name:
             layers.append(l.input.shape[1])
     layers.append(M_c.output.shape[1])
@@ -48,36 +50,33 @@ def generate_Mc_manual_C(M_c):
     layer_sizes_list += '}'
 
     string = ''
-
+    string += gen_header(inputs, len_buff, len(layers)-1)
     string += gen_activations()
-    string += gen_network_struct(len(layers))
-    string += 'const int number_of_layers = {};\n'.format(len(layers))
-    string += 'const int layer_sizes[number_of_layers] = {};\n'.format(layer_sizes_list)
-    string += 'float layer_0[{}];\n'.format(layers[0])
+
+    string += gen_network_struct(layer_sizes_list)
+
+    string += f"float activation_0[{layers[0]}];\n"
+
     for index in range(len(layers) - 1):
-        string += "float layer_{index_one}[{size}];\n\
-float bias_layer_{index_one}[{size}] = {biases};\n\
-float weights_layer_{index_one}[{weight_size}] = {weights};\n" \
-            .format(index_zero=index, index_one=(index + 1), size=layers[index + 1], \
-                    other_size=layers[index], weights=weights_strings[index][0], \
-                    biases=weights_strings[index][1], weight_size=layers[index + 1] * layers[index])
+        string += "float activation_{index_1}[{size}];\n\
+float bias_layer_{index}[{size}] = {biases};\n\
+float weights_layer_{index}[{weight_size}] = {weights};\n\
+Activation_function activation_function_{index} = new {activation_function}();\n" \
+            .format(index=index, index_1=index+1, size=layers[index+1],
+                    weights=weights_strings[index][0], biases=weights_strings[index][1],
+                    weight_size=layers[index + 1] * layers[index],
+                    activation_function=activations_function[index].capitalize())
     string += gen_init_network(len(layers))
-    string += "const int numOutputs = layer_sizes[number_of_layers - 1];"
-    string += gen_sigmoid()
+
     string += gen_forward_pass()
     string += gen_get_label()
-    return
+    string += gen_update_weights()
+    string += gen_backpropagate()
+    string += gen_train()
+    string += gen_push()
+    string += gen_evaluate()
 
-# TODO move strings to constants file, use strip-margins
-def gen_sigmoid():
-    res = "float sigmoid(float input){\n\
-    return 1 / (1 + exp(-input));\n\
-}\n\
-float sigmoid_derivative(float sig){\n\
-    return (sig * (1 - sig));\n\
-}\n"
-    return res
-
+    return string
 
 def gen_header(feature_size, buffer_size, n_layers):
     res = f"#include <math.h>\n\
@@ -89,7 +88,6 @@ def gen_header(feature_size, buffer_size, n_layers):
 #define N_LAYERS {n_layers}\n\
 "
     return res
-
 
 def gen_activations():
     res = "class Activation_function{\n\
@@ -244,12 +242,12 @@ def gen_network_struct(layer_sizes_list):
         bool is_full;\n\
     \n\
     \n\
-    }}t_dense_network;\n" \
-        .format(layer_sizes_list)
+    }}t_dense_network;\n"\
+    .format(layer_sizes_list)
     return res
 
-
 def gen_init_network(number_of_layers):
+
     res = "void init_network(t_dense_network &dense_network){\n\
     dense_network.activations_list[0] = activation_0;\n"
 
@@ -264,6 +262,8 @@ def gen_init_network(number_of_layers):
     dense_network.is_full = false;\n\
     }\n'
     return res
+
+
 
 
 def gen_forward_pass():
@@ -302,7 +302,6 @@ def gen_get_label():
 }\n"
     return res
 
-
 def gen_update_weights():
     res = "void update_weights_and_biases_of_layer(int act_index, float *layer_deltas, float lr, t_dense_network &d_network){\n\
   int layer_size = d_network.act_sizes[act_index];\n\
@@ -321,7 +320,6 @@ def gen_update_weights():
 }\n\
 "
     return res
-
 
 def gen_backpropagate():
     res = "void backpropagate(int *targets, float lr, t_dense_network &d_network){\n\
@@ -357,7 +355,6 @@ def gen_backpropagate():
 }\n\
 "
     return res
-
 
 def gen_train():
     res = "void train(t_dense_network & d_network, float lr){\n\
@@ -416,7 +413,6 @@ def gen_push():
 "
     return res
 
-
 def gen_evaluate():
     res = "bool evaluate(t_dense_network & d_network, float * output, int label){// TfLiteTensor* output, int label){\n\
         //load into the network\n\
@@ -430,7 +426,6 @@ def gen_evaluate():
         return label == l;\n\
 }\n"
     return res
-
 
 def create_Mf_lite_C(Mf_lite):
     model_name = 'Mf_tflite'
@@ -453,8 +448,7 @@ def create_Mf_lite_C(Mf_lite):
 
     with open('Mf_lite.tflite', 'wb') as file:
         file.write(Mf_lite)
-    os.system(
-        "!xxd -i Mf_lite.tflite > Mf_lite.cc")  # c:\cygwin64\bin\bash.exe --login -c xxd -i Mf_lite.tflite > Mf_lite.cc
+    os.system("!xxd -i Mf_lite.tflite > Mf_lite.cc")  # c:\cygwin64\bin\bash.exe --login -c xxd -i Mf_lite.tflite > Mf_lite.cc
     sub_proc_result = subprocess.run(["xxd", "-i", "Mf_lite.tflite", "Mf_lite.cc"], capture_output=True)
     assert sub_proc_result.returncode == 0
     with open('Mf_lite.cc', 'r') as file:
