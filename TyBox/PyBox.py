@@ -11,7 +11,6 @@ class Model:
         self.biases = [np.empty((layer_widths[i + 1])) for i in range(len(layer_widths) - 1)]
 
     def read_weights(self, files):
-        # print('read weights', len(files), len(self.layers) - 1)
         number_of_connection_groups = len(self.layers) - 1
         assert len(files) == number_of_connection_groups
         for layer_index in range(number_of_connection_groups):
@@ -32,7 +31,6 @@ class Model:
 
     def execute_forward_pass(self, input_value):
         assert len(input_value.shape) == 1
-        # print(input_value.shape[0], self.inputs)
         assert input_value.shape[0] == self.inputs
         self.layers[0] = [i for i in input_value]
         for i in range(len(self.layers) - 1):
@@ -48,16 +46,12 @@ class Model:
         for i in range(len(self.layers[-1])):
             self.layers[-1][i] = act[i]
 
-        # do_activation(activation_type)
-
     def execute_backprop(self, target, lr):
         output_deltas = self.calculate_output_delta(target)
         self.update_weights_and_biases_of_layer(len(self.layers) - 1, output_deltas, lr)
         successive_layer_deltas = output_deltas
-        # print('a')
         for layer_index in range(len(self.layers) - 2, 0, -1):
             layer_deltas = self.calculate_hidden_delta(layer_index, successive_layer_deltas)
-            # print(layer_deltas)
             self.update_weights_and_biases_of_layer(layer_index, layer_deltas, lr)
             successive_layer_deltas = layer_deltas
 
