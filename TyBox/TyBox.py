@@ -3,7 +3,7 @@ import math
 import tensorflow as tf
 import numpy as np
 
-from .profiler import Profiler
+from .Profiler import Profiler
 
 from .CodeGen import *
 
