@@ -28,30 +28,3 @@ class Activation(ABC):
             delta = derivative[node_index] * sum_of_succ_layer_deltas
             delta_hidden_list.append(delta)
         return delta_hidden_list
-
-
-# are these duplicates?
-def sigmoid(input_value):
-    try:
-        result = 1 / (1 + math.exp(-input_value))
-    except Exception as e:
-        raise Exception(f"{input_value}, {e}")
-    return result
-
-
-def sigmoid_derivative(input_value):
-    result = input_value * (1 - input_value)
-    return result
-
-
-def softmax(vector):
-    e = np.exp(vector)
-    return e / e.sum()
-
-
-def softmax_derivative(softmax_out, output_errors):
-    s = np.array(softmax_out)
-    si_sj = -s * s.reshape(len(softmax_out), 1)
-    s_der = np.diag(s) + si_sj
-    tmp = s_der @ output_errors
-    return tmp
