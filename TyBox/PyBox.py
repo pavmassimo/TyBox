@@ -1,9 +1,7 @@
 import numpy as np
-import math
-
-# from Activations.activation_funcs import sigmoid, softmax, sigmoid_derivative
 from Activations import Sigmoid, Softmax
-from .ActivationFactory import create_activation
+
+
 class Model:
     def __init__(self, layer_widths):
         self.inputs = layer_widths[0]
