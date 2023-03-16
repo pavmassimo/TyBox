@@ -18,6 +18,20 @@ class Sigmoid(Activation):
         results = np.array(results)
         return results
 
+    @staticmethod
+    def activate_scalar(value: float) -> float:
+        try:
+            result = 1 / (1 + math.exp(-value))
+            return result
+        except Exception as e:
+            print(value, e)
+            raise Exception
+
+    @staticmethod
+    def derivative_scalar(input_value: float) -> float:
+        result = input_value * (1 - input_value)
+        return result
+
     """vector assumed to be already activated"""
 
     @staticmethod

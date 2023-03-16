@@ -164,7 +164,7 @@ def create_on_device_learning_solution(tf_model, yield_representative_dataset):
     Mf_lite = convert_to_tflite(M_f, yield_representative_dataset)
     Mc_lite = convert_to_tflite(M_c)
     Mc_manual_python = create_python_model(M_c)
-    Mc_manual_header = generate_Mc_manual_C(M_c)
+    Mc_manual_header = generate_Mc_manual_C(M_c, 200)
     Mf_header, Mf_cc = create_Mf_lite_C(Mf_lite)
     return Mf_lite, Mc_manual_python, M_c, Mc_manual_header, Mf_header, Mf_cc
 

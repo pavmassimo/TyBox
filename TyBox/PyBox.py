@@ -1,5 +1,6 @@
 import numpy as np
-from Activations import Sigmoid, Softmax
+
+from TyBox.Activations import Sigmoid, Softmax
 
 
 class Model:
@@ -59,7 +60,7 @@ class Model:
         assert len(target) == self.outputs
         delta_output_list = []
         for output_index in range(self.outputs):
-            delta = Sigmoid.derivative(self.layers[-1][output_index]) * (
+            delta = Sigmoid.derivative_scalar(self.layers[-1][output_index]) * (
                         target[output_index] - self.layers[-1][output_index])
             delta_output_list.append(delta)
         assert len(delta_output_list) == self.outputs
