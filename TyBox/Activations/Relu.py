@@ -5,8 +5,8 @@ from .Activation import Activation
 
 
 class Relu(Activation):
-
-    def activate(self, vector):
+    @staticmethod
+    def activate(vector):
         results = []
         for input_value in vector:
             result = input_value if input_value > 0 else 0
@@ -15,7 +15,9 @@ class Relu(Activation):
         return results
 
     """vector assumed to be already activated"""
-    def derivative(self, vector):
+
+    @staticmethod
+    def derivative(vector):
         results = []
         for input_value in vector:
             result = 1 if input_value > 0 else 0

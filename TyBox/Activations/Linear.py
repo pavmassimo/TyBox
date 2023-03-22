@@ -5,9 +5,10 @@ from .Activation import Activation
 
 
 class Linear(Activation):
-
-    def activate(self, vector):
+    @staticmethod
+    def activate(vector):
         return vector
 
-    def derivative(self, vector):
+    @staticmethod
+    def derivative(vector):
         return np.ones(len(vector))
