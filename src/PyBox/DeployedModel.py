@@ -1,5 +1,5 @@
-from PyBoxBuffer import PyBoxBuffer
-from src import PyBoxModel
+from PyBox.PyBoxBuffer import PyBoxBuffer
+from PyBox import PyBoxModel
 
 
 class DeployedModel:

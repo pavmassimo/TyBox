@@ -1,4 +1,4 @@
-from .Activations import *
+from Activations import *
 
 
 def create_activation(activation):

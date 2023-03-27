@@ -1,13 +1,11 @@
-import math
-
 import tensorflow as tf
 import numpy as np
 
-from .Profiler import Profiler
+from PyBox.Profiler import Profiler
 
-from .CodeGen import *
+from PyBox.CodeGen import *
 
-from .PyBoxModel import PyBoxModel
+from PyBox.PyBoxModel import PyBoxModel
 
 class Error(Exception):
     pass

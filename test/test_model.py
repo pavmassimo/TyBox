@@ -5,8 +5,8 @@ import numpy as np
 from tensorflow import keras
 import tensorflow as tf
 
-from PyBoxBuffer import PyBoxBuffer
-from src import split_model, create_python_model
+from PyBox.PyBoxBuffer import PyBoxBuffer
+from PyBox.util import split_model, create_python_model
 
 
 # i used this function is to create a model for use in tests

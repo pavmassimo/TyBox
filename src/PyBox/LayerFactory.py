@@ -1,4 +1,4 @@
-from .Layers import *
+from Layers import *
 
 
 def create_layer(layer):
