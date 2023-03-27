@@ -7,7 +7,7 @@ from .Profiler import Profiler
 
 from .CodeGen import *
 
-from .PyBox import Model
+from .PyBoxModel import PyBoxModel
 
 class Error(Exception):
     pass
@@ -138,7 +138,7 @@ def create_python_model(M_c):
     layers.append(M_c.layers[-1].output.shape[1])
     print('debug', layers)
     # print('layers', layers)
-    Mc_manual_python = Model(layers)
+    Mc_manual_python = PyBoxModel(layers)
     # transfer weights
     w = extract_weights(M_c)
     file_name_list = []

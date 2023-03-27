@@ -1,2 +1,2 @@
 from .TyBox import *
-from .PyBox import *
+from .PyBoxModel import *

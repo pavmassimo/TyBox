@@ -3,7 +3,7 @@ import numpy as np
 from src.Activations import Sigmoid, Softmax
 
 
-class Model:
+class PyBoxModel:
     def __init__(self, layer_widths):
         self.inputs = layer_widths[0]
         self.outputs = layer_widths[-1]
