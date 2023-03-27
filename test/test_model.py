@@ -4,6 +4,8 @@ from typing import List
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
+
+from PyBoxBuffer import PyBoxBuffer
 from src import split_model, create_python_model
 
 
@@ -58,3 +60,7 @@ def test_forward_pass():
                                     0.060185346048922624, 0.006912595032461456]
     for value, expected_value in zip(values, expected_values):
         assert ((value**2 - expected_value**2) < 10e15)
+
+
+def test_buffer():
+    buffer = PyBoxBuffer(inputs=200, outputs=1, size=230)

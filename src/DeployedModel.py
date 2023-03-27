@@ -1,4 +1,4 @@
-from Buffer.PyBoxBuffer import PyBoxBuffer
+from PyBoxBuffer import PyBoxBuffer
 from src import PyBoxModel
 
 
