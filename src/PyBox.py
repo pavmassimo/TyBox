@@ -1,6 +1,6 @@
 import numpy as np
 
-from TyBox.Activations import Sigmoid, Softmax
+from src.Activations import Sigmoid, Softmax
 
 
 class Model:

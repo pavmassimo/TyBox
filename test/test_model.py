@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
-from TyBox import split_model, create_python_model
+from src import split_model, create_python_model
 
 
 # i used this function is to create a model for use in tests
