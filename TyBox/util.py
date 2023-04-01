@@ -1,13 +1,12 @@
-import math
+import os
 
 import tensorflow as tf
 import numpy as np
 
-from .Profiler import Profiler
+from TyBox.CodeGen import generate_Mc_manual_C, create_Mf_lite_C
+from TyBox.Profiler import Profiler
+from TyBox.PyBox import Model
 
-from .CodeGen import *
-
-from .PyBox import Model
 
 class Error(Exception):
     pass

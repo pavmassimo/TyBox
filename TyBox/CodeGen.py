@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+
 def extract_Mc_weights_as_string_unrolled_matrix(tf_model):
     result = []
     for layer in tf_model.layers:

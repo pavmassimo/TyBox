@@ -1,4 +1,4 @@
-from .Layers import *
+from TyBox.Layers import Conv2dLayer, DenseLayer, AvgPool2dLayer, MaxPool2dLayer, ReluLayer, AddLayer, Layer
 
 
 def create_layer(layer):

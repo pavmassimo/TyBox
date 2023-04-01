@@ -1,4 +1,4 @@
-from .Activations import *
+from TyBox.Activations import Linear, Relu, Softmax, Sigmoid
 
 
 def create_activation(activation):
