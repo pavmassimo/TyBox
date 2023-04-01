@@ -19,3 +19,9 @@ class Buffer:
             self.buffer[0] = sample
             self.labels[0] = label
             self.pointer = 1
+
+    def get_buffer_samples(self):
+        return self.buffer[:(max(self.pointer, self.is_full * self.size_buffer))]
+
+    def get_buffer_labels(self):
+        return self.labels[:(max(self.pointer, self.is_full * self.size_buffer))]
