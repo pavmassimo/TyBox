@@ -3,15 +3,15 @@
 ## Experiments
 
 ### Concept Drift Experiment
-https://colab.research.google.com/drive/1H5GmSao-ZI1jKifYny1pvOMs0IBoyq90?usp=sharing
+https://colab.research.google.com/drive/1DhLffUVHxrn1wIOIjrcRLodc4sDtvra6?usp=sharing
 
 ### Incremental Learning Experiment
 
-https://colab.research.google.com/drive/1lEWNFpj37FLiIoN-y0Unt8ojmA28Qe4t?usp=sharing
+https://colab.research.google.com/drive/1E_Nfo68ksIHJC8J-Lcf6vOppU6bKFVZa?usp=sharing
 
 ### Transfer Learning Experiment
 
-https://colab.research.google.com/drive/1xIXcGr25CbY2p5iuQB2ck8p07jkV1jhT#scrollTo=dGvcsPJLkzjx
+https://colab.research.google.com/drive/1nCgR0-XfQTZG1vvI6qLuEhkjZqxMb7XS?usp=sharing
 
 ### How to build project
 - run `python setup.py bdist_wheel` at root
