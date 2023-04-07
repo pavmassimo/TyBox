@@ -10,6 +10,10 @@ class Model:
         self.layers = [[0 for _ in range(layer_widths[i])] for i in range(len(layer_widths))]
         self.weights = [np.random.rand(layer_widths[i], layer_widths[i + 1]) for i in range(len(layer_widths) - 1)]
         self.biases = [np.empty((layer_widths[i + 1])) for i in range(len(layer_widths) - 1)]
+        self.learning_rate = 0
+
+    def set_lr(self, lr: int) -> None:
+        self.learning_rate = lr
 
     def read_weights(self, files):
         number_of_connection_groups = len(self.layers) - 1
@@ -61,7 +65,7 @@ class Model:
         delta_output_list = []
         for output_index in range(self.outputs):
             delta = Sigmoid.derivative_scalar(self.layers[-1][output_index]) * (
-                        target[output_index] - self.layers[-1][output_index])
+                    target[output_index] - self.layers[-1][output_index])
             delta_output_list.append(delta)
         assert len(delta_output_list) == self.outputs
         return delta_output_list
@@ -101,7 +105,7 @@ class Model:
             calculated_label = self.layers[-1].index(max(self.layers[-1]))
             if target_label == calculated_label:
                 score += 1
-        return score/len(inputs)
+        return score / len(inputs)
 
     def evaluate_one(self, input_data, target):
         self.execute_forward_pass(input_data)
@@ -115,8 +119,3 @@ class Model:
         for input_index in range(len(inputs)):
             self.execute_forward_pass(inputs[input_index])
             self.execute_backprop(targets[input_index], lr)
-
-    def train_until_correct(self, input_data, target, lr):
-        while not self.evaluate_one(input_data, target):
-            self.execute_forward_pass(input_data)
-            self.execute_backprop(target, lr)
