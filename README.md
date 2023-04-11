@@ -2,6 +2,8 @@
 
 ## Experiments
 
+You can find the notebook for the experiments both in the /experiment_notebooks folder and as colab at the links below:
+
 ### Concept Drift Experiment
 https://colab.research.google.com/drive/1DhLffUVHxrn1wIOIjrcRLodc4sDtvra6?usp=sharing
 
