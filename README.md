@@ -2,16 +2,7 @@
 
 ## Experiments
 
-### Concept Drift Experiment
-https://colab.research.google.com/drive/1H5GmSao-ZI1jKifYny1pvOMs0IBoyq90?usp=sharing
-
-### Incremental Learning Experiment
-
-https://colab.research.google.com/drive/1lEWNFpj37FLiIoN-y0Unt8ojmA28Qe4t?usp=sharing
-
-### Transfer Learning Experiment
-
-https://colab.research.google.com/drive/1xIXcGr25CbY2p5iuQB2ck8p07jkV1jhT#scrollTo=dGvcsPJLkzjx
+It's possible to find the notebook for the experiments in the /notebook folder.
 
 ### How to build project
 - run `python setup.py bdist_wheel` at root
