@@ -2,7 +2,7 @@
 
 ## Experiments
 
-It's possible to find the notebook for the experiments in the /notebook folder.
+It's possible to find the notebook for the experiments in the /experiment_notebooks folder.
 
 ### How to build project
 - run `python setup.py bdist_wheel` at root
