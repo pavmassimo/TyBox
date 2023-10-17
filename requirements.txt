@@ -1,3 +1,0 @@
-numpy~=1.22.3
-tensorflow~=2.8.0
-setuptools~=58.1.0
